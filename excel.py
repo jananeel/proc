@@ -1,3 +1,5 @@
+import sys
+import re
 import xlrd
 from xlwt import *
 import glob
@@ -5,7 +7,7 @@ from xlrd import XLRDError
 
 #def removeNumerics(line):
 #    if(line.strip()[0].isdigit()):
-#        
+#
 
 ROW = 0
 FINDING = 1
@@ -20,7 +22,29 @@ def write_row(ws,row_num, finding, detail, comment):
     ws.write(write_rw,FINDING,finding)
     ws.write(write_rw,FINDING_DETAIL,detail)
     ws.write(write_rw,COMMENT,comment)
-    write_rw +=1;
+    write_rw +=1
+
+def extract_numbered_entries(blob):
+    lines = blob.splitlines()
+    numbered_list = []
+    numbered = None
+    buf = ''
+
+    for line in lines:
+        if re.match('^\d\s*[.)].*',line): #beginning of a new numbered list
+            if buf and numbered: #if its not the first numbered list
+                numbered_list.append(buf) #push the last numbered list
+                buf = '' #empty buffer
+            numbered = True
+        #continue buffering
+        buf += (line +'\n')
+
+    #closing block
+    if buf and numbered: #if there is a buffer and its a numbered list
+        numbered_list.append(buf) #push the last numbered list
+        buf = ''
+
+    return numbered_list
 
 #define writer
 wb = Workbook()
@@ -29,9 +53,9 @@ ws0 = wb.add_sheet('0')
 write_row(ws0,"Row #","Finding","Finding Detail", "Comment")
 
 
-ifiles = glob.glob("/Users/neelanshadwivedi/Desktop/janu/*.xlsx")
+ifiles = glob.glob(sys.argv[1])
 for ifile in ifiles:
-
+    print "Processing file:" + ifile
 #print "The number of worksheet is: %d" % book.nsheets
     try:
         book = xlrd.open_workbook(ifile,encoding_override="cp1252")
@@ -58,48 +82,29 @@ for ifile in ifiles:
         if d1.lower() == 'n/a' or d1.strip() == '' : d1 = ''
         if d2.lower() == 'n/a'or d2.strip() == '' : d2 = ''
 
-        if len(findings) == 2 and d1 != '' and d2 != '':
-        #print each line as it is
-            print u"Row:%d:cond2:" % (rx) + findings[0] + "\t" + d1 
-            print u"Row:%d:cond2:" % (rx) + findings[1] + "\t" + d2
-            write_row(ws0,rx+1,findings[0],d1,"Cond2")
-            write_row(ws0,rx+1,findings[1],d2,"Cond2")
-        elif len(findings) == 1:
-            print u"Row:%d:cond1:" % (rx) + findings[0] + "\t" + d1 + d2;
-            write_row(ws0,rx+1,findings[0],d1+d2,"Cond1")
+        numbered_findings = extract_numbered_entries("\n".join(findings))
+        numbered_finding_details = extract_numbered_entries(d1+'\n'+d2)
 
+        #Check for numeric matches - code matched as Cond3
+        if( numbered_findings and numbered_finding_details and len(numbered_findings) == len(numbered_finding_details)):
+            for i in range(len(numbered_findings)):
+                #print u"Row:%d:cond3 numeric:" % (rx) + numbered_findings[i] + "\t" + numbered_finding_details[i]
+                write_row(ws0,rx+1,numbered_findings[i],numbered_finding_details[i],"Cond3: Numeric match")
+        #Cond2 - two findings with d1 and d2
+        elif not numbered_findings:
+            #equality check for 2 - code named Cond2
+            if len(findings) == 2 and d1 != '' and d2 != '':
+                write_row(ws0,rx+1,findings[0],d1,"Cond2")
+                write_row(ws0,rx+1,findings[1],d2,"Cond2")
+            #one finding with d1 and optional d2 - code named Cond1
+            elif len(findings) == 1:
+                #print u"Row:%d:cond1:" % (rx) + findings[0] + "\t" + d1 + d2;
+                write_row(ws0,rx+1,findings[0],d1+d2,"Cond1")
+            #Cond4 - unmatched findings and finding details after line split
         else:
-            findingdetails = (findingdetail1 + "\r\n" + findingdetail2).splitlines()
-        
-            if(len(findings) != len(findingdetails)):
-                print u"Neelansha Madam. Please look at row: %d "  % rx
-                write_row(ws0,rx+1,finding,(findingdetail1 + "\r\n" + findingdetail2),"Cond4: Neelansha Please look at it!")
-            #TODO: write this on the excel sheet. part complete!
-            else:
-                for i in range(len(findings)):
-                    print u"Row:%d:cond3:" % (rx) + findings[i] + "\t" + findingdetails[i]
-                    write_row(ws0,rx+1,findings[i],findingdetails[i],"Cond3")
-
-        wb.save(ifile + ".xls");            
+            #Cond4 - no such match. Dump findings and finding details and notify
+            write_row(ws0,rx+1,finding,(d1 + "\n" + d2),"Cond4: Neelansha Please look at it!")
 
 
-
-        
-    
-
-        
-        
-        
-
-    
-    
-    
-        
-        
-        
-        
-
-
-     
-    
-
+    print 'Written file: ' + ifile + ".xls"    
+    wb.save(ifile + ".xls")

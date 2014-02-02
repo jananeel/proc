@@ -1,0 +1,5 @@
+The way to run the excel.py is, for example:
+
+python ~/fd/excel.py ~/Desktop/janu/\*.xlsx
+
+This will then run against all the files under ~/Desktop/janu which ends with xlsx and create a corresponding file .xlsx.xls which will have the output in the same directory

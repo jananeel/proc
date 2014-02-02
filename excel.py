@@ -80,18 +80,25 @@ for ifile in ifiles:
         if finding.lower() == "n/a" or finding.strip() == '':
             continue
 
-        findings = finding.splitlines();
-        #print findings
-
         findingdetail1 = sheet.cell_value(rowx=rx,colx=5) #Column F, row=rx
         findingdetail2 = sheet.cell_value(rowx=rx,colx=6) #Column G, row=rx
         id = sheet.cell_value(rowx=rx,colx=1) #Column A, row=rx
 
-        d1 = findingdetail1.strip()  #remove leading whitespace
-        d2 = findingdetail2.strip()  #remove leading whitespace
+        try:
+            findings = finding.splitlines();
 
-        if d1.lower() == 'n/a' or d1.strip() == '' : d1 = ''
-        if d2.lower() == 'n/a'or d2.strip() == '' : d2 = ''
+            d1 = findingdetail1.strip()  #remove leading whitespace
+            d2 = findingdetail2.strip()  #remove leading whitespace
+
+            if d1.lower() == 'n/a' or d1.strip() == '' : d1 = ''
+            if d2.lower() == 'n/a'or d2.strip() == '' : d2 = ''
+        except:
+            print "Error reading, row: " + str(rx) + ":" + str(sys.exc_info())
+            #try to write row back
+            write_row(ws,rx+1,id,finding,unicode(findingdetail1)+"\n" + unicode(findingdetail2),"Cond4: Neelansha Madam. Please look" + str(sys.exc_info()))
+            print(unicode(findingdetail1)+"\n" + unicode(findingdetail2))
+            continue
+            
 
         numbered_findings = extract_numbered_entries("\n".join(findings))
         numbered_finding_details = extract_numbered_entries(d1+'\n'+d2)

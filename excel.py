@@ -9,12 +9,17 @@ from xlrd import XLRDError
 #    if(line.strip()[0].isdigit()):
 #
 
+#TODO: define a class which is the AuditReportWriter
+# It defines all the constants
+# It keeps track of new workbook, row number, column number etc..
+# This will be the only dependency with xlwt
+
 ROW = 0
 FINDING = 1
 FINDING_DETAIL = 2
 COMMENT = 3
 
-write_rw = 0
+def write_row = 0
 
 def write_row(ws,row_num, finding, detail, comment):
     global write_rw
@@ -46,12 +51,6 @@ def extract_numbered_entries(blob):
 
     return numbered_list
 
-#define writer
-wb = Workbook()
-ws0 = wb.add_sheet('0')
-
-write_row(ws0,"Row #","Finding","Finding Detail", "Comment")
-
 
 ifiles = glob.glob(sys.argv[1])
 for ifile in ifiles:
@@ -63,6 +62,14 @@ for ifile in ifiles:
     except XLRDError:
         print "Unable to open -Findings & CAP- in file: " + ifile
         continue
+
+    #define writer
+    #TOD0: encapsulate the creation and initialization in to a method in a class
+    # leads to better abstraction of reads and writes. Easier to debug!!
+    write_row = 0  
+    wb = Workbook()
+    ws = wb.add_sheet('0')
+    write_row(ws0,"Row #","Finding","Finding Detail", "Comment")
 
     for rx in range(2,sheet.nrows):
         finding = sheet.cell_value(rowx=rx,colx=4) #Column E, row = rx
@@ -89,21 +96,21 @@ for ifile in ifiles:
         if( numbered_findings and numbered_finding_details and len(numbered_findings) == len(numbered_finding_details)):
             for i in range(len(numbered_findings)):
                 #print u"Row:%d:cond3 numeric:" % (rx) + numbered_findings[i] + "\t" + numbered_finding_details[i]
-                write_row(ws0,rx+1,numbered_findings[i],numbered_finding_details[i],"Cond3: Numeric match")
+                write_row(ws,rx+1,numbered_findings[i],numbered_finding_details[i],"Cond3: Numeric match")
         #Cond2 - two findings with d1 and d2
         elif not numbered_findings:
             #equality check for 2 - code named Cond2
             if len(findings) == 2 and d1 != '' and d2 != '':
-                write_row(ws0,rx+1,findings[0],d1,"Cond2")
-                write_row(ws0,rx+1,findings[1],d2,"Cond2")
+                write_row(ws,rx+1,findings[0],d1,"Cond2")
+                write_row(ws,rx+1,findings[1],d2,"Cond2")
             #one finding with d1 and optional d2 - code named Cond1
             elif len(findings) == 1:
                 #print u"Row:%d:cond1:" % (rx) + findings[0] + "\t" + d1 + d2;
-                write_row(ws0,rx+1,findings[0],d1+d2,"Cond1")
+                write_row(ws,rx+1,findings[0],d1+d2,"Cond1")
             #Cond4 - unmatched findings and finding details after line split
         else:
             #Cond4 - no such match. Dump findings and finding details and notify
-            write_row(ws0,rx+1,finding,(d1 + "\n" + d2),"Cond4: Neelansha Please look at it!")
+            write_row(ws,rx+1,finding,(d1 + "\n" + d2),"Cond4: Neelansha Please look at it!")
 
 
     print 'Written file: ' + ifile + ".xls"    

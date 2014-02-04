@@ -67,7 +67,7 @@ for ifile in ifiles:
         continue
 
     #define writer
-    #TOD0: encapsulate the creation and initialization in to a method in a class
+    #TODO: encapsulate the creation and initialization in to a method in a class
     # leads to better abstraction of reads and writes. Easier to debug!!
     write_rw = 0  
     wb = Workbook()

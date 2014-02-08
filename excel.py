@@ -1,13 +1,16 @@
 import sys
-import re
+import utils
 import xlrd
 from xlwt import *
 import glob
+import logging
 from xlrd import XLRDError
 
 #def removeNumerics(line):
 #    if(line.strip()[0].isdigit()):
 #
+
+logging.basicConfig(level=logging.DEBUG)
 
 #TODO: define a class which is the AuditReportWriter
 # It defines all the constants
@@ -32,38 +35,17 @@ def write_row(ws,row_num, id,finding, detail, comment):
     ws.write(write_rw,COMMENT,comment)
     write_rw +=1
 
-def extract_numbered_entries(blob):
-    lines = blob.splitlines()
-    numbered_list = []
-    numbered = None
-    buf = ''
-
-    for line in lines:
-        if re.match('^\d\s*[.):].*',line): #beginning of a new numbered list
-            if buf and numbered: #if its not the first numbered list
-                numbered_list.append(buf) #push the last numbered list
-                buf = '' #empty buffer
-            numbered = True
-        #continue buffering
-        buf += (line +'\n')
-
-    #closing block
-    if buf and numbered: #if there is a buffer and its a numbered list
-        numbered_list.append(buf) #push the last numbered list
-        buf = ''
-
-    return numbered_list
-
 
 ifiles = glob.glob(sys.argv[1])
+
 for ifile in ifiles:
-    print "Processing file:" + ifile
+    logging.info("Processing file:" + ifile)
 #print "The number of worksheet is: %d" % book.nsheets
     try:
         book = xlrd.open_workbook(ifile,encoding_override="cp1252")
         sheet = book.sheet_by_name("Findings & CAP")
-    except XLRDError:
-        print "Unable to open -Findings & CAP- in file: " + ifile
+    except XLRDError as e:
+        logging.exception("Unable to open -Findings & CAP- in file: " + ifile )
         continue
 
     #define writer
@@ -85,7 +67,7 @@ for ifile in ifiles:
         id = sheet.cell_value(rowx=rx,colx=1) #Column A, row=rx
 
         try:
-            findings = finding.splitlines();
+            findings = finding.strip().splitlines();  #strip all extra whitespaces and new lines
 
             d1 = findingdetail1.strip()  #remove leading whitespace
             d2 = findingdetail2.strip()  #remove leading whitespace
@@ -93,21 +75,22 @@ for ifile in ifiles:
             if d1.lower() == 'n/a' or d1.strip() == '' : d1 = ''
             if d2.lower() == 'n/a'or d2.strip() == '' : d2 = ''
         except:
-            print "Error reading, row: " + str(rx) + ":" + str(sys.exc_info())
+            logging.exception("Error reading, row: " + str(rx))
             #try to write row back
             write_row(ws,rx+1,id,finding,unicode(findingdetail1)+"\n" + unicode(findingdetail2),"Cond4: Neelansha Madam. Please look" + str(sys.exc_info()))
-            print(unicode(findingdetail1)+"\n" + unicode(findingdetail2))
+            logging.exception(unicode(findingdetail1)+"\n" + unicode(findingdetail2))
             continue
             
 
-        numbered_findings = extract_numbered_entries("\n".join(findings))
-        numbered_finding_details = extract_numbered_entries(d1+'\n'+d2)
+        (fhdr,numbered_findings) = utils.extract_numbered_entries("\n".join(findings))
+        (fdhdr,numbered_finding_details) = utils.extract_numbered_entries(d1+'\n'+d2)
+        
 
         #Check for numeric matches - code matched as Cond3
         if( numbered_findings and numbered_finding_details and len(numbered_findings) == len(numbered_finding_details)):
             for i in range(len(numbered_findings)):
                 #print u"Row:%d:cond3 numeric:" % (rx) + numbered_findings[i] + "\t" + numbered_finding_details[i]
-                write_row(ws,rx+1,id,numbered_findings[i],numbered_finding_details[i],"Cond3: Numeric match")
+                write_row(ws,rx+1,id,fhdr + numbered_findings[i] ,fdhdr + numbered_finding_details[i],"Cond3: Numeric match")
         #Cond2 - two findings with d1 and d2
         elif not numbered_findings:
             #equality check for 2 - code named Cond2
@@ -122,13 +105,13 @@ for ifile in ifiles:
             else:
                 write_row(ws,rx+1,id,finding,(d1 + "\n" + d2),"Cond4: Neelansha Please look at it!")
         # Neelansha madam's special case - Cond2.1
-        elif numbered_findings and not numbered_finding_details and len(numbered_findings) == 2 and d1 != '' and d2 != '':
-            write_row(ws,rx+1,id,numbered_findings[0],d1,"Cond2.1")
-            write_row(ws,rx+1,id,numbered_findings[1],d2,"Cond2.1")
+        elif numbered_findings and (not numbered_finding_details or len(numbered_findings) != len(numbered_finding_details)):
+            for finding in numbered_findings:
+                write_row(ws,rx+1,id,finding,d1+'\n'+d2,"Cond2.1")
         else:
             #Cond4 - no such match. Dump findings and finding details and notify
             write_row(ws,rx+1,id,finding,(d1 + "\n" + d2),"Cond4: Neelansha Please look at it!")
 
 
-    print 'Written file: ' + ifile + ".xls"    
+    logging.info('Written file: ' + ifile + ".xls")    
     wb.save(ifile + ".xls")

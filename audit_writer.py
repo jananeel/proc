@@ -9,6 +9,11 @@ class AuditReportWriter:
     TEXT_STYLE.alignment.wrap = 1
     TEXT_STYLE_ERROR = xlwt.XFStyle()
     TEXT_STYLE_ERROR.alignment.wrap = 1
+    pattern = xlwt.Pattern()
+    pattern.pattern = xlwt.Pattern.SOLID_PATTERN
+    pattern.pattern_fore_colour = xlwt.Style.colour_map['lime']
+    TEXT_STYLE_ERROR.pattern = pattern
+
     HEADER_STYLE = xlwt.XFStyle()
     HEADER_STYLE.alignment.wrap = 1
 

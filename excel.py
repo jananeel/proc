@@ -5,19 +5,8 @@ import glob
 import logging
 from audit_writer import AuditReportWriter
 
-#def removeNumerics(line):
-#    if(line.strip()[0].isdigit()):
-#
-
 logging.basicConfig(level=logging.DEBUG)
 
-#TODO: define a class which is the AuditReportWriter
-# It defines all the constants
-# It keeps track of new workbook, row number, column number etc..
-# This will be the only dependency with xlwt
-
-        
-        
 ifiles = glob.glob(sys.argv[1])
 
 for ifile in ifiles:

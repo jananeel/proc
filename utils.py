@@ -9,7 +9,7 @@ def extract_numbered_entries(blob):
 
     for line in lines:
         line = line.strip()
-        if re.match('^\d+\s*[.):].+',line): #beginning of a new numbered list
+        if re.match('^(\d+)\s*[.):].+',line): #beginning of a new numbered list
             if not numbered: #if its the first numbered list
                 numbered=True
                 header = buf
@@ -27,4 +27,6 @@ def extract_numbered_entries(blob):
         buf = ''
 
     return header,numbered_list
+
+            
 

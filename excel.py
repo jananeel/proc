@@ -55,23 +55,11 @@ for ifile in ifiles:
             for i in range(len(numbered_findings)):
                 #print u"Row:%d:cond3 numeric:" % (rx) + numbered_findings[i] + "\t" + numbered_finding_details[i]
                 ar.write_row(rx+1,id,fhdr + numbered_findings[i] ,fdhdr + numbered_finding_details[i],"Cond3: Numeric match")
-        #Cond2 - two findings with d1 and d2
-        elif not numbered_findings:
-            #equality check for 2 - code named Cond2
-            if len(findings) == 2 and d1 != '' and d2 != '':
-                ar.write_row(rx+1,id,findings[0],d1,"Cond2")
-                ar.write_row(rx+1,id,findings[1],d2,"Cond2")
-            #one finding with d1 and optional d2 - code named Cond1
-            elif len(findings) == 1:
-                #print u"Row:%d:cond1:" % (rx) + findings[0] + "\t" + d1 + d2;
-                ar.write_row(rx+1,id,findings[0],d1+d2,"Cond1")
-            #Cond4 - unmatched findings and finding details after line split
-            else:
-                ar.write_row(rx+1,id,finding,(d1 + "\n" + d2),"Cond4: Neelansha Please look at it!")
-        # Neelansha madam's special case - Cond2.1
         elif numbered_findings and (not numbered_finding_details or len(numbered_findings) != len(numbered_finding_details)):
-            for finding in numbered_findings:
-                ar.write_row(rx+1,id,finding,d1+'\n'+d2,"Cond2.1")
+            for find in numbered_findings:
+                ar.write_row(rx+1,id,fhdr + find,d1+'\n'+d2,"Cond2.1")
+        elif not numbered_findings:
+            ar.write_row(rx+1,id,finding,(d1 + "\n" + d2),"Cond1")
         else:
             #Cond4 - no such match. Dump findings and finding details and notify
             ar.write_row(rx+1,id,finding,(d1 + "\n" + d2),"Cond4: Neelansha Please look at it!")

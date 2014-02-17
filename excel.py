@@ -4,6 +4,7 @@ import xlrd
 import glob
 import logging
 from audit_writer import AuditReportWriter
+from audit_parser import AuditParser
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -47,22 +48,30 @@ for ifile in ifiles:
             continue
             
 
-        (fhdr,numbered_findings) = utils.extract_numbered_entries("\n".join(findings))
-        (fdhdr,numbered_finding_details) = utils.extract_numbered_entries(d1+'\n'+d2)
-        
+        (fhdr,numbered_findings,fob) = AuditParser("\n".join(findings)).parse()
+        (fdhdr,numbered_finding_details,fdob) = AuditParser(d1+'\n'+d2).parse(fob)
+
+        exd_observations = []
+        exd_observations.append(fdhdr)
+        exd_observations.extend(numbered_finding_details)
+
         #Check for numeric matches - code matched as Cond3
         if( numbered_findings and numbered_finding_details and len(numbered_findings) == len(numbered_finding_details)):
             for i in range(len(numbered_findings)):
-                #print u"Row:%d:cond3 numeric:" % (rx) + numbered_findings[i] + "\t" + numbered_finding_details[i]
                 ar.write_row(rx+1,id,fhdr + numbered_findings[i] ,fdhdr + numbered_finding_details[i],"Cond3: Numeric match")
         elif numbered_findings and (not numbered_finding_details or len(numbered_findings) != len(numbered_finding_details)):
             for find in numbered_findings:
-                ar.write_row(rx+1,id,fhdr + find,d1+'\n'+d2,"Cond2.1")
+                ar.write_row(rx+1,id,fhdr + find,"".join(exd_observations),"Cond2.1")
         elif not numbered_findings:
-            ar.write_row(rx+1,id,finding,(d1 + "\n" + d2),"Cond1")
+            ar.write_row(rx+1,id,fhdr,"".join(exd_observations),"Cond1")
         else:
             #Cond4 - no such match. Dump findings and finding details and notify
             ar.write_row(rx+1,id,finding,(d1 + "\n" + d2),"Cond4: Neelansha Please look at it!")
+
+        if fob and not fdob:
+            ar.write_row(rx+1,id,fob,d1 + "\n" + d2,"Cond5.1 observ")
+        elif fob and fdob:
+            ar.write_row(rx+1,id,fob,fdob,"Cond5 observ")
 
     logging.info('Written file: ' + ifile + ".xls")    
     ar.save()

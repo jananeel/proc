@@ -3,3 +3,12 @@ The way to run the excel.py is, for example:
 python ~/fd/excel.py ~/Desktop/janu/\*.xlsx
 
 This will then run against all the files under ~/Desktop/janu which ends with xlsx and create a corresponding file .xlsx.xls which will have the output in the same directory
+
+Running rename script is like this:
+
+python ./rename.py -s a -e x.xlsx -d ~/Desktop/renamed -g '/Users/neelanshadwivedi/Desktop/2013/*/*.xlsx'
+
+-s is for creating symlinks. Otherwise rename - not tested enough for rename flow
+-e is extension to be used while creating symlinks/renamed files
+-d is the directory name where to create symlinks
+-g is the glob used to get all the files. glob is processed by python. to avoid the shell parsing it, use single quotes!

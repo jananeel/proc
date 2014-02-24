@@ -8,6 +8,9 @@ from audit_parser import AuditParser
 
 logging.basicConfig(level=logging.DEBUG)
 
+FINDING_TYPE = "Finding"  #value for the type field, in case of findings
+OBSERV_TYPE = "Observ" #value for the type field, in case of observations
+
 ifiles = glob.glob(sys.argv[1])
 
 for ifile in ifiles:
@@ -30,7 +33,9 @@ for ifile in ifiles:
 
         findingdetail1 = sheet.cell_value(rowx=rx,colx=5) #Column F, row=rx
         findingdetail2 = sheet.cell_value(rowx=rx,colx=6) #Column G, row=rx
-        id = sheet.cell_value(rowx=rx,colx=1) #Column A, row=rx
+        id = sheet.cell_value(rowx=rx,colx=1) #Column B, row=rx
+        cat = sheet.cell_value(rowx=rx,colx=2), #Column C, row=rx
+        cause = sheet.cell_value(rowx=rx,colx=8), #Column I
 
         try:
             findings = finding.strip().splitlines();  #strip all extra whitespaces and new lines
@@ -43,10 +48,10 @@ for ifile in ifiles:
         except:
             logging.exception("Error reading, row: " + str(rx))
             #try to write row back
-            ar.write_row(rx+1,id,finding,unicode(findingdetail1)+"\n" + unicode(findingdetail2),"Cond4: Neelansha Madam. Please look" + str(sys.exc_info()))
+            ar.write_row(rx+1,id,"ERROR","ERROR",finding,unicode(findingdetail1)+"\n" + unicode(findingdetail2),cause,"Cond4: Neelansha Madam. Please look" + str(sys.exc_info()))
             logging.exception(unicode(findingdetail1)+"\n" + unicode(findingdetail2))
             continue
-            
+
 
         (fhdr,numbered_findings,fob) = AuditParser("\n".join(findings)).parse()
         (fdhdr,numbered_finding_details,fdob) = AuditParser(d1+'\n'+d2).parse(fob)
@@ -58,20 +63,20 @@ for ifile in ifiles:
         #Check for numeric matches - code matched as Cond3
         if( numbered_findings and numbered_finding_details and len(numbered_findings) == len(numbered_finding_details)):
             for i in range(len(numbered_findings)):
-                ar.write_row(rx+1,id,fhdr + numbered_findings[i] ,fdhdr + numbered_finding_details[i],"Cond3: Numeric match")
+                ar.write_row(rx+1,id,cat,FINDING_TYPE,fhdr + numbered_findings[i] ,fdhdr + numbered_finding_details[i],cause,"Cond3: Numeric match")
         elif numbered_findings and (not numbered_finding_details or len(numbered_findings) != len(numbered_finding_details)):
             for find in numbered_findings:
-                ar.write_row(rx+1,id,fhdr + find,"".join(exd_observations),"Cond2.1")
+                ar.write_row(rx+1,id,cat,FINDING_TYPE,fhdr + find,"".join(exd_observations),cause,"Cond2.1")
         elif not numbered_findings:
-            ar.write_row(rx+1,id,fhdr,"".join(exd_observations),"Cond1")
+            ar.write_row(rx+1,id,cat,FINDING_TYPE,fhdr,"".join(exd_observations),cause,"Cond1")
         else:
             #Cond4 - no such match. Dump findings and finding details and notify
-            ar.write_row(rx+1,id,finding,(d1 + "\n" + d2),"Cond4: Neelansha Please look at it!")
+            ar.write_row(rx+1,id,cat,FINDING_TYPE,finding,(d1 + "\n" + d2),cause,"Cond4: Neelansha Please look at it!")
 
         if fob and not fdob:
-            ar.write_row(rx+1,id,fob,d1 + "\n" + d2,"Cond5.1 observ")
+            ar.write_row(rx+1,id,cat,OBSERV_TYPE,fob,d1 + "\n" + d2,cause,"Cond5.1 observ")
         elif fob and fdob:
-            ar.write_row(rx+1,id,fob,fdob,"Cond5 observ")
+            ar.write_row(rx+1,id,cat,OBSERV_TYPE,fob,fdob,cause,"Cond5 observ")
 
-    logging.info('Written file: ' + ifile + ".xls")    
+    logging.info('Written file: ' + ifile + ".xls")
     ar.save()

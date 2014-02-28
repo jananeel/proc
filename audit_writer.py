@@ -55,3 +55,6 @@ class AuditReportWriter:
         self.worksheet.write(self.write_rw,self.TYPE,type,style)
         self.worksheet.write(self.write_rw,self.ROOT_CAUSE,cause,style)
         self.write_rw +=1
+
+    def get_workbook(self):
+        return self.workbook

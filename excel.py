@@ -3,7 +3,7 @@ import utils
 import xlrd
 import glob
 import logging
-from xlwriter import XLWriter
+from xl_converter import XLConverter
 from audit_writer import AuditReportWriter
 from audit_parser import AuditParser
 
@@ -79,59 +79,60 @@ for ifile in ifiles:
         elif fob and fdob:
             ar.write_row(rx+1,id,cat,OBSERV_TYPE,fob,fdob,cause,"Cond5 observ")
 
-    #map facility profile
-    try:
-        facility_profile = book.sheet_by_name("Facility Profile")
-    except xlrd.XLRDError as e:
-        logging.exception("Unable to open -FacilityProfile- in file: " + ifile)
-        continue
+    # #map facility profile
+    # try:
+    #     facility_profile = book.sheet_by_name("Facility Profile")
+    # except xlrd.XLRDError as e:
+    #     logging.exception("Unable to open -FacilityProfile- in file: " + ifile)
+    #     continue
 
-    writer = XLWriter(ar.get_workbook(),"Facility Profile")
+    # writer = XLWriter(ar.get_workbook(),"Facility Profile")
 
-    #copy A3:A19 to A2:A18 and B3:B19 to B2:B18
-    tgt_row = 1
-    tgt_col = 1
-    for rx in range(2,19):
-        writer.copy(facility_profile,rx,0,tgt_row,tgt_col)
-        writer.copy(facility_profile,rx,1,tgt_row,tgt_col+1)
-        tgt_row += 1
+    # #copy A3:A19 to A2:A18 and B3:B19 to B2:B18
+    # tgt_row = 1
+    # tgt_col = 1
+    # for rx in range(2,19):
+    #     writer.copy(facility_profile,rx,0,tgt_row,tgt_col)
+    #     writer.copy(facility_profile,rx,1,tgt_row,tgt_col+1)
+    #     tgt_row += 1
 
-    tgt_row = 18
-    tgt_col = 1
-    for rx in range(22,30):
-        writer.copy(facility_profile,rx,0,tgt_row,tgt_col)
-        tgt_row += 1
+    # tgt_row = 18
+    # tgt_col = 1
+    # for rx in range(22,30):
+    #     writer.copy(facility_profile,rx,0,tgt_row,tgt_col)
+    #     tgt_row += 1
 
-    tgt_row = 26
-    tgt_col = 0
-    for rx in range(31,38):
-        writer.copy(facility_profile,rx,0,tgt_row,tgt_col)
-        tgt_row += 1
+    # tgt_row = 26
+    # tgt_col = 0
+    # for rx in range(31,38):
+    #     writer.copy(facility_profile,rx,0,tgt_row,tgt_col)
+    #     tgt_row += 1
 
-    writer.copy(facility_profile,39,0,33,0)
+    # writer.copy(facility_profile,39,0,33,0)
 
-    tgt_row = 18
-    for rx in range(22,30):
-        tgt_col = 2
-        for cx in range(1,6):
-            writer.copy(facility_profile,rx,cx,tgt_row,tgt_col)
-            tgt_col +=1
-        tgt_row +=1
+    # tgt_row = 18
+    # for rx in range(22,30):
+    #     tgt_col = 2
+    #     for cx in range(1,6):
+    #         writer.copy(facility_profile,rx,cx,tgt_row,tgt_col)
+    #         tgt_col +=1
+    #     tgt_row +=1
 
-    tgt_row = 26
-    for rx in range(31,37):
-        tgt_col = 2
-        for cx in range(1,6):
-            writer.copy(facility_profile,rx,cx,tgt_row,tgt_col)
-            tgt_col +=1
-        tgt_row +=1
+    # tgt_row = 26
+    # for rx in range(31,37):
+    #     tgt_col = 2
+    #     for cx in range(1,6):
+    #         writer.copy(facility_profile,rx,cx,tgt_row,tgt_col)
+    #         tgt_col +=1
+    #     tgt_row +=1
 
-    writer.copy(facility_profile,37,1,32,1)
-    writer.copy(facility_profile,39,1,33,1)
+    # writer.copy(facility_profile,37,1,32,1)
+    # writer.copy(facility_profile,39,1,33,1)
 
     # END Facility Profile
 
+    converter = XLConverter(book,ar.get_workbook(),"./config")
+    converter.process()
 
-
-    logging.info('Written file: ' + ifile + ".xls")
     ar.save()
+    logging.info('Written file: ' + ifile + ".xls")

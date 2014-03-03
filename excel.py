@@ -6,6 +6,7 @@ import logging
 from xl_converter import XLConverter
 from audit_writer import AuditReportWriter
 from audit_parser import AuditParser
+from facility_profile_mapper import FacilityMapper
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -13,6 +14,11 @@ FINDING_TYPE = "Finding"  #value for the type field, in case of findings
 OBSERV_TYPE = "Observ" #value for the type field, in case of observations
 
 ifiles = glob.glob(sys.argv[1])
+facility_profile_file = sys.argv[2]
+
+#read facility profile config
+facility_mapper  = FacilityMapper(facility_profile_file)
+
 
 for ifile in ifiles:
     logging.info("Processing file:" + ifile)
@@ -20,6 +26,7 @@ for ifile in ifiles:
     try:
         book = xlrd.open_workbook(ifile,encoding_override="cp1252")
         sheet = book.sheet_by_name("Findings & CAP")
+        facility_profile = book.sheet_by_name("Facility Profile")
     except xlrd.XLRDError as e:
         logging.exception("Unable to open -Findings & CAP- in file: " + ifile )
         continue
@@ -79,60 +86,15 @@ for ifile in ifiles:
         elif fob and fdob:
             ar.write_row(rx+1,id,cat,OBSERV_TYPE,fob,fdob,cause,"Cond5 observ")
 
-    # #map facility profile
-    # try:
-    #     facility_profile = book.sheet_by_name("Facility Profile")
-    # except xlrd.XLRDError as e:
-    #     logging.exception("Unable to open -FacilityProfile- in file: " + ifile)
-    #     continue
-
-    # writer = XLWriter(ar.get_workbook(),"Facility Profile")
-
-    # #copy A3:A19 to A2:A18 and B3:B19 to B2:B18
-    # tgt_row = 1
-    # tgt_col = 1
-    # for rx in range(2,19):
-    #     writer.copy(facility_profile,rx,0,tgt_row,tgt_col)
-    #     writer.copy(facility_profile,rx,1,tgt_row,tgt_col+1)
-    #     tgt_row += 1
-
-    # tgt_row = 18
-    # tgt_col = 1
-    # for rx in range(22,30):
-    #     writer.copy(facility_profile,rx,0,tgt_row,tgt_col)
-    #     tgt_row += 1
-
-    # tgt_row = 26
-    # tgt_col = 0
-    # for rx in range(31,38):
-    #     writer.copy(facility_profile,rx,0,tgt_row,tgt_col)
-    #     tgt_row += 1
-
-    # writer.copy(facility_profile,39,0,33,0)
-
-    # tgt_row = 18
-    # for rx in range(22,30):
-    #     tgt_col = 2
-    #     for cx in range(1,6):
-    #         writer.copy(facility_profile,rx,cx,tgt_row,tgt_col)
-    #         tgt_col +=1
-    #     tgt_row +=1
-
-    # tgt_row = 26
-    # for rx in range(31,37):
-    #     tgt_col = 2
-    #     for cx in range(1,6):
-    #         writer.copy(facility_profile,rx,cx,tgt_row,tgt_col)
-    #         tgt_col +=1
-    #     tgt_row +=1
-
-    # writer.copy(facility_profile,37,1,32,1)
-    # writer.copy(facility_profile,39,1,33,1)
-
-    # END Facility Profile
-
     converter = XLConverter(book,ar.get_workbook(),"./config")
     converter.process()
+
+    #get facility profile name from file
+    (frow,fcol) = converter.decode_single_cell('B5')
+    facility_name = facility_profile.cell_value(rowx=frow,colx=fcol).strip()
+    facility_id = facility_mapper.get_facility_id(facility_name,2013)
+    converter.write_value("Facility Profile","A1","Facility ID From MSS:")
+    converter.write_value("Facility Profile","B1",facility_id)
 
     ar.save()
     logging.info('Written file: ' + ifile + ".xls")

@@ -116,3 +116,8 @@ class XLConverter:
 
     def save(self):
         self.book.save()
+
+    def write_value(self,outsheet_name,rowcol,value):
+        (row,col) = self.decode_single_cell(rowcol)
+        outsheet = self.get_outsheet(outsheet_name)
+        outsheet.write(row,col,value,self.style)

@@ -17,6 +17,8 @@ class XLConverter:
         self.conv_map = {}
         self.outsheet_map = {}
         self.parse(config_file)
+        self.style = xlwt.XFStyle()
+        self.style.alignment.wrap = 1
 
     def parse(self,config):
         with open(config) as f:
@@ -110,8 +112,7 @@ class XLConverter:
 
     def copy(self,insheet,inrow,incol,outsheet,orow,ocol):
         invalue = insheet.cell_value(rowx=inrow,colx=incol)
-        outsheet.write(orow,ocol,invalue)
-        #TODO: copy style?
+        outsheet.write(orow,ocol,invalue,self.style)
 
     def save(self):
         self.book.save()

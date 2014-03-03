@@ -4,6 +4,8 @@ import xlwt
 import logging
 from string import ascii_uppercase
 
+logger.setLevel(logging.INFO)
+
 class XLConverter:
     """
         XLConverter that takes in a inbook, outbook and config mapping file
@@ -23,7 +25,7 @@ class XLConverter:
     def parse(self,config):
         with open(config) as f:
             for line in f.readlines():
-                logging.info(line)
+                logging.debug(line)
                 if not line.strip():
                     continue
                 (src,dst) = line.split('=')

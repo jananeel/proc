@@ -4,8 +4,6 @@ import xlwt
 import logging
 from string import ascii_uppercase
 
-logger.setLevel(logging.INFO)
-
 class XLConverter:
     """
         XLConverter that takes in a inbook, outbook and config mapping file

@@ -8,7 +8,7 @@ from audit_writer import AuditReportWriter
 from audit_parser import AuditParser
 from facility_profile_mapper import FacilityMapper
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 FINDING_TYPE = "Finding"  #value for the type field, in case of findings
 OBSERV_TYPE = "Observ" #value for the type field, in case of observations

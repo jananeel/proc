@@ -62,7 +62,7 @@ for ifile in ifiles:
 
 
         (fhdr,numbered_findings,fob) = AuditParser("\n".join(findings)).parse()
-        (fdhdr,numbered_finding_details,fdob) = AuditParser(d1+'\n'+d2).parse(fob)
+        (fdhdr,numbered_finding_details,fdob) = AuditParser(d1+'\n\n'+d2).parse(fob)
 
         exd_observations = []
         exd_observations.append(fdhdr)
@@ -70,9 +70,12 @@ for ifile in ifiles:
 
         #Check for numeric matches - code matched as Cond3
         if( numbered_findings and numbered_finding_details and len(numbered_findings) == len(numbered_finding_details)):
+            numbered_findings[0] = fhdr + "\n" + numbered_finding_details[0]
+            numbered_finding_details[0] = fdhdr + "\n" + numbered_finding_details[0]
             for i in range(len(numbered_findings)):
-                ar.write_row(rx+1,id,cat,FINDING_TYPE,fhdr + numbered_findings[i] ,fdhdr + numbered_finding_details[i],cause,"Cond3: Numeric match")
+                ar.write_row(rx+1,id,cat,FINDING_TYPE, numbered_findings[i] , numbered_finding_details[i],cause,"Cond3: Numeric match")
         elif numbered_findings and (not numbered_finding_details or len(numbered_findings) != len(numbered_finding_details)):
+            numbered_findings[0] = fhdr + "\n" + numbered_finding_details[0]
             for find in numbered_findings:
                 ar.write_row(rx+1,id,cat,FINDING_TYPE,fhdr + find,"".join(exd_observations),cause,"Cond2.1")
         elif not numbered_findings:

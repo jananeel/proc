@@ -34,18 +34,19 @@ for ifile in ifiles:
     ar = AuditReportWriter(ifile+'.xls','Findings & CAP')
 
     for rx in range(2,sheet.nrows):
-        finding = sheet.cell_value(rowx=rx,colx=4) #Column E, row = rx
-        #print finding;
-        if finding.lower() == "n/a" or finding.strip() == '':
-            continue
-
-        findingdetail1 = sheet.cell_value(rowx=rx,colx=5) #Column F, row=rx
-        findingdetail2 = sheet.cell_value(rowx=rx,colx=6) #Column G, row=rx
-        id = sheet.cell_value(rowx=rx,colx=1) #Column B, row=rx
-        cat = sheet.cell_value(rowx=rx,colx=2), #Column C, row=rx
-        cause = sheet.cell_value(rowx=rx,colx=8), #Column I
-
         try:
+
+            finding = sheet.cell_value(rowx=rx,colx=4) #Column E, row = rx
+            #print finding;
+            if finding.lower() == "n/a" or finding.strip() == '':
+                continue
+        
+            findingdetail1 = sheet.cell_value(rowx=rx,colx=5) #Column F, row=rx
+            findingdetail2 = sheet.cell_value(rowx=rx,colx=6) #Column G, row=rx
+            id = sheet.cell_value(rowx=rx,colx=1) #Column B, row=rx
+            cat = sheet.cell_value(rowx=rx,colx=2), #Column C, row=rx
+            cause = sheet.cell_value(rowx=rx,colx=8), #Column I
+
             findings = finding.strip().splitlines();  #strip all extra whitespaces and new lines
 
             d1 = findingdetail1.strip()  #remove leading whitespace
@@ -89,15 +90,19 @@ for ifile in ifiles:
         elif fob and fdob:
             ar.write_row(rx+1,id,cat,OBSERV_TYPE,fob,fdob,cause,"Cond5 observ")
 
-    converter = XLConverter(book,ar.get_workbook(),"./config")
-    converter.process()
+    try:
+        converter = XLConverter(book,ar.get_workbook(),"./config")
+        converter.process()
+        
+        #get facility profile name from file
+        (frow,fcol) = converter.decode_single_cell('B5')
+        facility_name = facility_profile.cell_value(rowx=frow,colx=fcol).strip()
+        facility_id = facility_mapper.get_facility_id(facility_name,2013)
+        converter.write_value("Facility Profile","A1","Facility ID From MSS:")
+        converter.write_value("Facility Profile","B1",facility_id)
 
-    #get facility profile name from file
-    (frow,fcol) = converter.decode_single_cell('B5')
-    facility_name = facility_profile.cell_value(rowx=frow,colx=fcol).strip()
-    facility_id = facility_mapper.get_facility_id(facility_name,2013)
-    converter.write_value("Facility Profile","A1","Facility ID From MSS:")
-    converter.write_value("Facility Profile","B1",facility_id)
-
-    ar.save()
-    logging.info('Written file: ' + ifile + ".xls")
+        ar.save()
+        logging.info('Written file: ' + ifile + ".xls")
+    except:
+        logging.error("Error processing file: " + ifile + ".No output written")
+        

@@ -6,6 +6,8 @@ import glob
 import sys
 import logging
 
+logging.basicConfig(level=logging.INFO)
+
 FINDING_SHEET = 0
 FINDING_COL = 5
 FINDING_DETAIL_COL = 6
@@ -30,7 +32,7 @@ ifiles = glob.glob(sys.argv[1])
 
 
 for ifile in ifiles:
-    logging.info("Processing file:" + ifile)
+    logging.info("Removing numbered findings in file:" + ifile)
     try:
         inbook = xlrd.open_workbook(ifile)
         outbook = copy(inbook)
@@ -48,4 +50,5 @@ for ifile in ifiles:
         continue
 
     outbook.save(ifile + ".nonum.xls")
+    logging.info('Written file: ' + ifile + ".nonum.xls")
 

@@ -33,6 +33,6 @@ class FacilityMapper:
         """
         Given a facility name, gives the corresponding facility id
         """
-        if facility_name.strip() in self.facility_map:
+        if (facility_name.strip(),year) in self.facility_map:
             return self.facility_map[(facility_name.strip(),year)]
         return None

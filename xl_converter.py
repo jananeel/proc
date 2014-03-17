@@ -23,7 +23,7 @@ class XLConverter:
     def parse(self,config):
         with open(config) as f:
             for line in f.readlines():
-                logging.info(line)
+                logging.debug(line)
                 if not line.strip():
                     continue
                 (src,dst) = line.split('=')

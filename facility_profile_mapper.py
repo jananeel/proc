@@ -1,8 +1,8 @@
 import xlrd
 
-FACILITY_ID_COL=0
-FACILITY_NAME_COL=10
-YEAR_COL = 7
+FACILITY_ID_COL=2
+FACILITY_NAME_COL=12
+DATE_COL = 6
 AUDIT_MAP_SHEET = 'all audits'
 
 class FacilityMapper:
@@ -22,17 +22,21 @@ class FacilityMapper:
     def create_map(self):
         for rx in range(self.sheet.nrows):
             facility_id = self.sheet.cell_value(rowx=rx,colx=FACILITY_ID_COL)
-            year = self.sheet.cell_value(rowx=rx,colx=YEAR_COL)
+            date = self.sheet.cell_value(rowx=rx,colx=DATE_COL)
             facility_name = self.sheet.cell_value(rowx=rx,colx=FACILITY_NAME_COL).strip()
-            #if (facility_name,year) in self.facility_map:
-            #    raise Exception("Input exception: Duplicate value: %s,%d " %(facility_name, year))
-            self.facility_map[(facility_name,year)]=facility_id
+            if (facility_name,date) in self.facility_map:
+                self.facility_map[(facility_name,date)] = ''
+                #raise Exception("Input exception: Duplicate value: %s,%d " %(facility_name, date))
+            self.facility_map[(facility_name,date)]=facility_id
+        
+        #print self.facility_map
 
 
-    def get_facility_id(self,facility_name,year):
+    def get_facility_id(self,facility_name,date):
         """
         Given a facility name, gives the corresponding facility id
         """
-        if (facility_name.strip(),year) in self.facility_map:
-            return self.facility_map[(facility_name.strip(),year)]
+        #print self.facility_map[(facility_name.strip(),date)]
+        if (facility_name.strip(),date) in self.facility_map:
+            return self.facility_map[(facility_name.strip(),date)]
         return None

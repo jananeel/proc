@@ -15,6 +15,7 @@ OBSERV_TYPE = "Observ" #value for the type field, in case of observations
 
 ifiles = glob.glob(sys.argv[1])
 facility_profile_file = sys.argv[2]
+config_file = sys.argv[3]
 
 #read facility profile config
 facility_mapper  = FacilityMapper(facility_profile_file)
@@ -91,7 +92,7 @@ for ifile in ifiles:
             ar.write_row(rx+1,id,cat,OBSERV_TYPE,fob,fdob,cause,"Cond5 observ")
 
     try:
-        converter = XLConverter(book,ar.get_workbook(),"./config")
+        converter = XLConverter(book,ar.get_workbook(),config_file)
         converter.process()
         
         #get facility profile name from file

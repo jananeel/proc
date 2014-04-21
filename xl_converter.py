@@ -4,6 +4,8 @@ import xlwt
 import logging
 from string import ascii_uppercase
 
+logging.basicConfig(level=logging.INFO)
+
 class XLConverter:
     """
         XLConverter that takes in a inbook, outbook and config mapping file
@@ -67,11 +69,11 @@ class XLConverter:
         """
         A23 is converted to (22,0)
         """
-        col = self.__compute_col(cell)
+        col = self.decode_col(cell)
         row = int("".join([s for s in cell if s.isdigit()])) -1
         return (row,col)
 
-    def __compute_col(self,col):
+    def decode_col(self,col):
         col_val = 0
         step = 0
         for alpha in col:
@@ -88,7 +90,11 @@ class XLConverter:
             (outsheet_name,outrow,outcol) = value
             outsheet = self.get_outsheet(outsheet_name)
             # copy the value from insheet to outsheet
-            self.copy(insheet,inrow,incol,outsheet,outrow,outcol)
+            try:
+                self.copy(insheet,inrow,incol,outsheet,outrow,outcol)
+            except IndexError:
+                logging.info("Index Error. Unable to copy: " + str(inrow) + ":" + str(incol))
+                
 
     def get_outsheet(self,outsheet_name):
         if outsheet_name not in self.outsheet_map:

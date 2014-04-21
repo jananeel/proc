@@ -1,16 +1,7 @@
-Facility Profile;A3:A19=A2:A18
-Facility Profile;A23:A30=A19:A26
-Facility Profile;A32:A38=A27:A33
-Facility Profile;A40=A34
-Facility Profile;B3:B19=B2:B18
-Facility Profile;B23:F30=C19:G26
-Facility Profile;B32:F37=C27:G32
-Facility Profile;B38=B33
-Facility Profile;B40=B34
-Audit General Info;A3:A15=A2:A14
-Audit General Info;A17:A22=A15:A20
-Audit General Info;B3:B15=B2:B14
-Audit General Info;B17:B22=B15:B20
+Facility Profile;A3:A40=A2:A39
+Facility Profile;B3:B40=B2:B39
+Audit General Info;A3:A30=A2:A29
+Audit General Info;B3:B30=B2:B29
 
 
 

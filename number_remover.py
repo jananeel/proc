@@ -20,8 +20,8 @@ def process(inbook, outbook):
         finding = findings_sheet.cell_value(rowx=ri,colx=FINDING_COL).strip()
         finding_detail = findings_sheet.cell_value(rowx=ri,colx=FINDING_DETAIL_COL).strip()
 
-        finding = re.sub(r'^(\(?[0-9a-zA-Z]\s*[.):]\s*)','',finding)
-        finding_detail = re.sub(r'^(\(?[0-9a-zA-Z]\s*[.):]\s*)','',finding_detail)
+        finding = re.sub(r'^(\s*\(?[0-9a-zA-Z]\s*[.):]\s*)','',finding)
+        finding_detail = re.sub(r'^(\s*\(?[0-9a-zA-Z]\s*[.):]\s*)','',finding_detail)
 
         outbook.get_sheet(FINDING_SHEET).write(ri,FINDING_COL,finding)
         outbook.get_sheet(FINDING_SHEET).write(ri,FINDING_DETAIL_COL,finding_detail)

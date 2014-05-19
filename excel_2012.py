@@ -8,7 +8,7 @@ from audit_writer import AuditReportWriter
 from audit_parser import AuditParser
 from facility_profile_mapper import FacilityMapper
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 FINDING_TYPE = "Finding"  #value for the type field, in case of findings
 OBSERV_TYPE = "Observ" #value for the type field, in case of observations
@@ -20,6 +20,8 @@ config_file = sys.argv[3]
 #read facility profile config
 facility_mapper  = FacilityMapper(facility_profile_file)
 
+logging.debug("Starting the script")
+print("starting")
 
 for ifile in ifiles:
     logging.info("Processing file:" + ifile)
@@ -37,29 +39,35 @@ for ifile in ifiles:
     for rx in range(2,sheet.nrows):
         try:
 
-            finding = sheet.cell_value(rowx=rx,colx=4) #Column E, row = rx
-            #print finding;
+            finding = unicode(sheet.cell_value(rowx=rx,colx=6)) #Column E, row = rx
+            #print "%04x" % ord(finding[0])
             if finding.lower() == "n/a" or finding.strip() == '':
                 continue
         
-            findingdetail1 = sheet.cell_value(rowx=rx,colx=5) #Column F, row=rx
-            findingdetail2 = sheet.cell_value(rowx=rx,colx=6) #Column G, row=rx
-            id = sheet.cell_value(rowx=rx,colx=1) #Column B, row=rx
-            cat = sheet.cell_value(rowx=rx,colx=2), #Column C, row=rx
-            cause = sheet.cell_value(rowx=rx,colx=8), #Column I
+            findingdetail1 = unicode(sheet.cell_value(rowx=rx,colx=7)) #Column F, row=rx
+            findingdetail2 = unicode(sheet.cell_value(rowx=rx,colx=8)) #Column G, row=rx
+            findingdetail3 = unicode(sheet.cell_value(rowx=rx,colx=9))
+            id = unicode(sheet.cell_value(rowx=rx,colx=1)) #Column B, row=rx
+            cat = unicode(sheet.cell_value(rowx=rx,colx=2)), #Column C, row=rx
+            cause = unicode(sheet.cell_value(rowx=rx,colx=8)), #Column I
 
             findings = finding.strip().splitlines();  #strip all extra whitespaces and new lines
 
             d1 = findingdetail1.strip()  #remove leading whitespace
             d2 = findingdetail2.strip()  #remove leading whitespace
+            d3 = findingdetail3.strip()
 
             if d1.lower() == 'n/a' or d1.strip() == '' : d1 = ''
             if d2.lower() == 'n/a'or d2.strip() == '' : d2 = ''
+            if d3.lower() == 'n/a'or d3.strip() == '' : d3 = ''
+            
+            if(d3 != '' ) : d2 = d2 + '\n' + d3
+
         except:
             logging.exception("Error reading, row: " + str(rx))
             #try to write row back
-            ar.write_row(rx+1,id,"ERROR","ERROR",finding,unicode(findingdetail1)+"\n" + unicode(findingdetail2),cause,"Cond4: Neelansha Madam. Please look" + str(sys.exc_info()))
-            logging.exception(unicode(findingdetail1)+"\n" + unicode(findingdetail2))
+            #ar.write_row(rx+1,id,"ERROR","ERROR",finding,findingdetail1)+"\n" + findingdetail2,cause,"Cond4: Neelansha Madam. Please look" + str(sys.exc_info()))
+            logging.exception(findingdetail1 +"\n" + findingdetail2)
             continue
 
 
@@ -79,9 +87,9 @@ for ifile in ifiles:
         elif numbered_findings and (not numbered_finding_details or len(numbered_findings) != len(numbered_finding_details)):
             numbered_findings[0] = fhdr + "\n" + numbered_findings[0]
             for find in numbered_findings:
-                ar.write_row(rx+1,id,cat,FINDING_TYPE,fhdr + find,"".join(exd_observations),cause,"Cond2.1")
+                ar.write_row(rx+1,id,cat,FINDING_TYPE,fhdr + find,u"".join(exd_observations),cause,"Cond2.1")
         elif not numbered_findings:
-            ar.write_row(rx+1,id,cat,FINDING_TYPE,fhdr,"".join(exd_observations),cause,"Cond1")
+            ar.write_row(rx+1,id,cat,FINDING_TYPE,fhdr,u"".join(exd_observations),cause,"Cond1")
         else:
             #Cond4 - no such match. Dump findings and finding details and notify
             ar.write_row(rx+1,id,cat,FINDING_TYPE,finding,(d1 + "\n" + d2),cause,"Cond4: Neelansha Please look at it!")
@@ -101,7 +109,7 @@ for ifile in ifiles:
         facility_id = facility_mapper.get_facility_id(facility_name,2013)
         converter.write_value("Facility Profile","A1","Facility ID From MSS:")
         converter.write_value("Facility Profile","B1",facility_id)
-        
+
         ar.save()
         logging.info('Written file: ' + ifile + ".xls")
     except:

@@ -47,9 +47,9 @@ class AuditParser:
         for line in self.blob.splitlines():
             line = line.strip()
             cur_state = new_state = self.state 
-            if observ and re.match('^(\(?(\d+)\s*[ .):]\s*)?observation(s)?:?',line,re.I):
+            if observ and re.match(ur'^(\(?(\d+)\s*[ .):]\s*)?observation(s)?:?',line,re.I):
                 new_state = Context.observation
-            elif re.match('^\(?(\d+)\s*[ .):].+',line): #beginning of a new numbered list
+            elif re.match(ur'^\(?((\d+)|[\u2022])\s*[ .):].+',line): #beginning of a new numbered list
                 new_state = Context.new_number
             if cur_state != new_state:
                 self.transition(cur_state,new_state)

@@ -4,7 +4,7 @@ import xlwt
 import logging
 from string import ascii_uppercase
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 class XLConverter:
     """
